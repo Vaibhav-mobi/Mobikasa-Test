@@ -1,0 +1,46 @@
+
+<script>
+const data = `query MyQuery {
+  products(first: 25, query: "tag:add OR offer OR Hookah Hose OR acao OR New arrival") {
+    nodes {
+      handle
+      tags
+      id
+    }
+  }
+}`;
+
+fetch('https://mobikasa-test-development.myshopify.com/api/2023-01/graphql.json', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/graphql',
+    'X-Shopify-Storefront-Access-Token': '88ef7c338af3a88a41bd524dd83f7ff3'
+  },
+  body: data,
+})
+.then((response) => response.json())
+.then((data) => {
+  let productNodes = data.data.products.nodes;
+  let items = [];
+  for (let i = 0; i < productNodes.length; i++) {
+    let product = productNodes[i];
+    let Gid = product.id.split('/');
+    let Id = Gid[4];
+    items.push(Id);
+  }
+  let queryString = items.map(function (item) {
+    return "id:" + item;
+  }).join(" OR ");
+  let template = 'static-featured-collection';
+  fetch("".concat(window.routes.searchUrl, "?view=").concat(template, "&type=product&q=").concat(queryString),{credentials: "same-origin",method: "GET",}).then(function (response) {
+    response.text().then(function (content) {
+      var tempElement = document.createElement("div");
+      tempElement.innerHTML = content;
+      console.log(tempElement);
+    });
+  });
+})
+.catch((error) => {
+  console.error('Error:', error);
+})
+</script>
